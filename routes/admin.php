@@ -64,3 +64,9 @@ Route::post('rbac/permission/delete/{id}', 'PermissionController@delete')->name(
 Route::get('users/manage', 'UserController@index')->name('users.manage');
 Route::any('users', 'UserController@index')->name('users');
 
+
+Route::any('users', 'UserController@index')->name('users');
+
+
+
+
