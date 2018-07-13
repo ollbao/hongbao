@@ -65,11 +65,11 @@ Route::get('users/manage', 'UserController@index')->name('users.manage');
 Route::any('users', 'UserController@index')->name('users');
 
 
-
 /**
- * 测试提交
+ * 撒元龙
  */
 Route::any('users', 'UserController@index')->name('users');
+Route::any('wxcash', 'UserController@index')->name('wxcash');
 
 
 
