@@ -68,8 +68,8 @@ Route::any('users', 'UserController@index')->name('users');
 /**
  * 撒元龙
  */
-Route::any('users', 'UserController@index')->name('users');
-Route::any('wxcash', 'UserController@index')->name('wxcash');
+Route::any('wxcash', 'UserController@index')->name('wxcash1');
+Route::any('wxcash', 'UserController@index')->name('wxcash2');
 
 
 
