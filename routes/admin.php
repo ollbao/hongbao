@@ -65,6 +65,10 @@ Route::get('users/manage', 'UserController@index')->name('users.manage');
 Route::any('users', 'UserController@index')->name('users');
 
 
+
+/**
+ * 测试提交
+ */
 Route::any('users', 'UserController@index')->name('users');
 
 
