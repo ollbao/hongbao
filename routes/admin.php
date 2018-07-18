@@ -65,15 +65,16 @@ Route::get('users/manage', 'UserController@index')->name('users.manage');
 Route::any('users', 'UserController@index')->name('users');
 
 
-
-
-
-
-/**
- * 撒元龙
+/*
+ * 微信发红包
  */
-Route::any('wxcash', 'UserController@index')->name('wxcash1');
-Route::any('wxcash', 'UserController@index')->name('wxcash2');
+
+Route::any('wxcash', 'WxcashController@index')->name('wxcash');
+Route::any('wxcash/add', 'WxcashController@add')->name('wxcash-add');
+Route::any('wxcash/edit/{id}', 'WxcashController@edit')->name('wxcash-edit');
+Route::any('wxcash/putonline/{id}/{type}', 'WxcashController@putonline')->name('wxcash-putonline');
+Route::any('wxcash/delete/{id}', 'WxcashController@delete')->name('wxcash-delete');
+
 
 
 

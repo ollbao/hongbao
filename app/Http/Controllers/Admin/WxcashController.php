@@ -4,13 +4,15 @@ namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-class WxcashController extends Controller {
-    
+use App\Models\Wxcash;
+use Illuminate\Support\Facades\Validator;
+use App\Library\Y;
 
-    //
-    //权限列表
+class WxcashController extends Controller {
+
+    //广告微信红包列表
     public function index(Request $request) {
-        
+
         if ($request->isMethod('post')) {
             $Wxcash = \App\Models\Wxcash::all()->toArray();
             return view('admin.wxcash.index_list', [
@@ -21,26 +23,39 @@ class WxcashController extends Controller {
         }
     }
 
-    //添加权限
+    //添加活动
     public function add(Request $request) {
         if ($request->isMethod('post')) {
             $post = $request->post();
             $validator = Validator::make($post, [
-                        'title' => 'required|max:64',
-                        'name' => 'required|max:64'
+                        'title' => 'required',
+                        'description' => 'required',
+                        'amount' => 'required',
+                        'range' => 'required',
+                        'start_date' => 'required',
+                        'end_date' => 'required',
+                        'link_url' => 'required',
             ]);
             if ($validator->fails()) {
                 return Y::error($validator->errors());
             }
-            $post['guard_name'] = 'admin';
-            try {
-                Role::create($post);
-            } catch (\Exception $e) {
-                return Y::error($e->getMessage());
-            }
+            $wxcash = new Wxcash();
+            $wxcash->title = $post['title'];
+            $wxcash->description = $post['description'];
+            $wxcash->amount = $post['amount'];
+            $wxcash->range = $post['range'];
+            $wxcash->start_date = $post['start_date'];
+            $wxcash->end_date = $post['end_date'];
+            $wxcash->link_url = $post['link_url'];
+            $wxcash->online = 0;
+            $wxcash->status = 1;
+            $wxcash->flag = empty($post['flag']) ? 0 : 1;
+            $wxcash->created_at = date("Y-m-d H:i:s", time());
+            $wxcash->updated_at = date("Y-m-d H:i:s", time());
+            $wxcash->save();
             return Y::success('添加成功');
         } else {
-            return view('admin.rbac.role.add');
+            return view('admin.wxcash.add');
         }
     }
 
@@ -49,14 +64,19 @@ class WxcashController extends Controller {
         if ($request->isMethod('post')) {
             $post = $request->post();
             $validator = Validator::make($post, [
-                        'title' => 'required|max:64',
-                        'name' => 'required|max:64'
+                        'title' => 'required',
+                        'description' => 'required',
+                        'amount' => 'required',
+                        'range' => 'required',
+                        'start_date' => 'required',
+                        'end_date' => 'required',
+                        'link_url' => 'required',
             ]);
             if ($validator->fails()) {
                 return Y::error($validator->errors());
             }
             try {
-                $result = Role::where('id', $id)->update($post);
+                $result = Wxcash::where('id', $id)->update($post);
             } catch (\Exception $e) {
                 return Y::error($e->getMessage());
             }
@@ -66,8 +86,8 @@ class WxcashController extends Controller {
             return Y::success('更新失败');
         } else {
             //当前权限
-            $info = Role::findOrFail($id);
-            return view('admin.rbac.role.edit', [
+            $info = Wxcash::findOrFail($id);
+            return view('admin.wxcash.edit', [
                 'info' => $info
             ]);
         }
@@ -75,52 +95,26 @@ class WxcashController extends Controller {
 
     //删除
     public function delete($id) {
-        if (Role::destroy($id) > 0) {
+        if (Wxcash::destroy($id) > 0) {
             return Y::success('删除成功');
         }
         return Y::error('删除失败');
     }
 
-    //分配权限
-    public function assign(Request $request, $id) {
+    //上下线
+    public function putonline(Request $request, $id, $type) {
         if ($request->isMethod('post')) {
-            $operate = $request->post('operate');
-            $rules = (array) $request->post('rules');
-            $role = Role::findById($id);
-
-            if (empty($rules)) {
-                return Y::error('请选择权限');
+            $post['online'] = $type == 0 ? "0" : 1;
+            try {
+                $result = Wxcash::where('id', $id)->update($post);
+            } catch (\Exception $e) {
+                return Y::error($e->getMessage());
             }
-
-            if ($operate == 'add') {
-                foreach ($rules as $rule) {
-                    $role->givePermissionTo($rule);
-                }
+            if ($result) {
+                Y::success('上线成功');
             } else {
-                foreach ($rules as $rule) {
-                    $role->revokePermissionTo($rule);
-                }
+                Y::error('上线失败');
             }
-
-            return Y::success();
-        } else {
-            //获取该角色没有的权限
-            $role = Role::findById($id);
-            $has_permissions = $role->permissions->toArray();
-            $ids = [];
-            if ($has_permissions) {
-                foreach ($has_permissions as $permission) {
-                    array_push($ids, $permission['id']);
-                }
-            }
-            //所有权限
-            $permissions = Permission::all()->toArray();
-            return view($request->get('ajax', 0) ? 'admin.rbac.role.rules' : 'admin.rbac.role.assign', [
-                'role' => $role,
-                'ids' => $ids,
-                'permissions' => Tree::unlimitForLevel($permissions),
-                'has_permissions' => $has_permissions
-            ]);
         }
     }
 
